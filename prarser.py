@@ -16,4 +16,5 @@ def getTests():
 t = getTests();
 
 for f in t:
-  print(f);
+  s = f.read();
+  print(s);
