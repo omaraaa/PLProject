@@ -18,38 +18,53 @@ st= {};
 line=1
 col=1
 errors = []
+buff = "";
 def lex(f):
-  global st;
-  global errors;
+  global st, errors, line, col;
   st = f
   errors = []
+  line=1
+  col=1
+  buff = "";
   def serr(e):
-    global errors;
-    errors = errors + ["Error:" + e];
+    global errors, line, col, buff;
+    errors = errors + ["Error: {} \"{}\" at line:{} col:{}".format(e, buff, line, col)];
+    buff = "";
   def nextchar(*t):
-    global st;
+    global st, line, col;
     
     while(st[0] == ' ' or st[0] == '\n'):
+      col += 1
+      if(st[0] == '\n'):
+        line += 1
+        col = 1
       st = st[1::]
     #print(t, st[0:5]);
     for c in t:
       if c == st[0]:
+        col+=1
         st = st[1::]
         return True;
 
     return False;
-  def gotochar(t, inc=True):
-    global st;
+  def gotochar(t):
+    global st, line, col, buff;
     while(st[0] != t):
-      #print(st[0], t)
-      st = st[1::]
-    if inc:
+      buff += st[0];
+      col += 1
+      if(st[0] == '\n'):
+        line += 1
+        col = 1
       st = st[1::]
 
   def next(t):
-    global st;
+    global st, line, col;
     
     while(st[0] == ' ' or st[0] == '\n'):
+      col += 1
+      if(st[0] == '\n'):
+        line += 1
+        col = 1
       st = st[1::]
     #print(t, st[0]);
     i = 0;
@@ -58,6 +73,7 @@ def lex(f):
       if t[i] != st[i]:
           return False;
       i+=1;
+    col += i
     st = st[i::];
     return True;
 
@@ -151,8 +167,9 @@ def lex(f):
       if nextchar("("):
         term_list();
         if not nextchar(")"):
-          serr("invalid term");
           gotochar(")");
+          serr("invalid term")
+          nextchar(")");
       return 1;
     return False;
       
@@ -161,7 +178,7 @@ def lex(f):
 
   def predicate_list():
     if not predicate():
-      gotochar(",", False);
+      gotochar(",");
       serr("invalid predicate");
 
     if(nextchar(",")):
