@@ -15,19 +15,17 @@ def getTests():
 
 t = getTests();
 st= {};
+line=1
+col=1
+errors = []
 def lex(f):
   global st;
+  global errors;
   st = f
-  line=1
-  col=1
-  serr = False;
-
-  def r(b, e):
-    global serr;
-    if e:
-      serr = True;
-      print(e)
-
+  errors = []
+  def serr(e):
+    global errors;
+    errors = errors + ["Error:" + e];
   def nextchar(*t):
     global st;
     
@@ -40,6 +38,13 @@ def lex(f):
         return True;
 
     return False;
+  def gotochar(t, inc=True):
+    global st;
+    while(st[0] != t):
+      #print(st[0], t)
+      st = st[1::]
+    if inc:
+      st = st[1::]
 
   def next(t):
     global st;
@@ -132,7 +137,6 @@ def lex(f):
       return 1;
     if numeral():
       return 1;
-
     return False;
 
   def term_list():
@@ -146,14 +150,19 @@ def lex(f):
     if atom():
       if nextchar("("):
         term_list();
-        nextchar(")");
+        if not nextchar(")"):
+          serr("invalid term");
+          gotochar(")");
       return 1;
+    return False;
       
 
     
 
   def predicate_list():
-    predicate();
+    if not predicate():
+      gotochar(",", False);
+      serr("invalid predicate");
 
     if(nextchar(",")):
       predicate_list();
@@ -162,7 +171,8 @@ def lex(f):
     if(next("?- ")):
       predicate_list()
 
-    nextchar(".");
+    if not nextchar("."):
+      serr("Query must end with .")
 
   def clause():
     if(not predicate()):
@@ -185,10 +195,10 @@ def lex(f):
     query();
 
   program();
-  if not "".join(st.split()):
+  if not errors:
     print("Correct");
   else:
-    print("incorrect")
+    print("Syntax Error:",*errors, sep='\n')
 
 
 
