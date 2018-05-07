@@ -10,7 +10,7 @@ def getTests():
       f = open(str(i)+".txt");
     except FileNotFoundError:
       return;
-    yield f;
+    yield (f, str(i)+".txt");
     i+=1;
 
 t = getTests();
@@ -220,8 +220,9 @@ def lex(f):
 
 
 ####
-for f in t:
+for f, fn in t:
   s = f.read();
+  print(fn)
   lex(s)
   print("");
 ####
