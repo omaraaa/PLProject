@@ -13,6 +13,7 @@ def getTests():
     yield (f, str(i)+".txt");
     i+=1;
 
+
 t = getTests();
 st= {};
 line=1
@@ -26,6 +27,10 @@ def lex(f):
   line=1
   col=1
   buff = "";
+  def n():
+    global st;
+    if not n:
+      return False;
   def serr(e):
     global errors, line, col, buff;
     errors = errors + ["Error: {} \"{}\" at line:{} col:{}".format(e, buff, line, col)];
@@ -33,14 +38,21 @@ def lex(f):
   def nextchar(*t):
     global st, line, col;
     
+    if not st:
+      return False;
+
     while(st[0] == ' ' or st[0] == '\n'):
       col += 1
       if(st[0] == '\n'):
         line += 1
         col = 1
       st = st[1::]
+      if not st:
+        return False;
     #print(t, st[0:5]);
     for c in t:
+      if not st:
+        return False;
       if c == st[0]:
         col+=1
         st = st[1::]
@@ -49,6 +61,8 @@ def lex(f):
     return False;
   def gotochar(t):
     global st, line, col, buff;
+    if not st:
+      return False;
     while(st[0] != t):
       buff += st[0];
       col += 1
@@ -56,19 +70,26 @@ def lex(f):
         line += 1
         col = 1
       st = st[1::]
+      if not st:
+        return False;
 
   def next(t):
     global st, line, col;
-    
+    if not st:
+      return False;
     while(st[0] == ' ' or st[0] == '\n'):
       col += 1
       if(st[0] == '\n'):
         line += 1
         col = 1
       st = st[1::]
+      if not st:
+        return False;
     #print(t, st[0]);
     i = 0;
     while(i < len(t)):
+      if not st:
+        return False;
       #print(t[i], st[i]);
       if t[i] != st[i]:
           return False;
@@ -187,6 +208,8 @@ def lex(f):
   def query():
     if(next("?- ")):
       predicate_list()
+    else:
+      serr("no query found")
 
     if not nextchar("."):
       serr("Query must end with .")
